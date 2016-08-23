@@ -21,13 +21,12 @@ public class Main {
             port = Integer.parseInt(args[1]);
             command = args[2];
         } catch (Exception e) {
-            System.out.println("Usage: java -jar SafeAdmin.jar some.host.com port command");
+            System.out.println("Usage: java -jar SafeAdmin.jar some.host.com port \"some command\"");
             return;
         }
 
         Socket socket = null;
         DataOutputStream out = null;
-        try {
             try {
                 socket = new Socket();
                 socket.connect(new InetSocketAddress(server, port), 10000);
@@ -56,20 +55,24 @@ public class Main {
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            } catch (SocketTimeoutException e) {
+                System.out.println("Connection timed out, could not reach server");
+            } catch (IOException e) {
+                e.printStackTrace();
             } finally {
-                if (out != null) {
-                    out.flush();
-                    out.close();
-                }
-                if (socket != null) {
-                    socket.close();
+                try {
+                    if (out != null) {
+                        out.flush();
+                        out.close();
+                    }
+                    if (socket != null) {
+                        socket.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-        } catch (SocketTimeoutException e) {
-            System.out.println("Connection timed out, could not reach server");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
     private static void sendCommand(String command, DataOutputStream out) {
